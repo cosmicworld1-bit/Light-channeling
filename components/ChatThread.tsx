@@ -67,7 +67,7 @@ export default function ChatThread() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
         {messages.length === 0 && (
           <p className="mt-10 text-center text-sm text-neutral-500">
             Ask about a school, or tell me about a session you just ran.
@@ -83,7 +83,7 @@ export default function ChatThread() {
 
       <form
         onSubmit={handleSubmit}
-        className="flex gap-2 border-t border-neutral-200 p-3 dark:border-neutral-800"
+        className="flex gap-2 border-t border-neutral-200 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] dark:border-neutral-800"
       >
         <input
           value={input}
