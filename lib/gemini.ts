@@ -1,5 +1,5 @@
-import { GoogleGenAI, createPartFromFunctionResponse } from "@google/genai";
-import type { Content, Part } from "@google/genai";
+import { ApiError, GoogleGenAI, createPartFromFunctionResponse } from "@google/genai";
+import type { Content, GenerateContentResponse, Part } from "@google/genai";
 import { TOOLS, dispatchTool } from "./tools";
 import type { ChatMessage, UiCard } from "./types";
 
@@ -27,6 +27,31 @@ function getClient(): GoogleGenAI {
   return new GoogleGenAI({ apiKey });
 }
 
+const RETRYABLE_STATUSES = new Set([503, 500]);
+const RETRY_DELAYS_MS = [800, 2000];
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Free-tier traffic occasionally gets a transient 503 when Google's servers
+// are overloaded — these usually succeed on an immediate retry, unlike 429
+// quota errors, which need real time to pass and aren't worth retrying here.
+async function generateContentWithRetry(
+  ai: GoogleGenAI,
+  params: Parameters<GoogleGenAI["models"]["generateContent"]>[0],
+): Promise<GenerateContentResponse> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await ai.models.generateContent(params);
+    } catch (error) {
+      const isRetryable = error instanceof ApiError && RETRYABLE_STATUSES.has(error.status);
+      if (!isRetryable || attempt >= RETRY_DELAYS_MS.length) throw error;
+      await sleep(RETRY_DELAYS_MS[attempt]);
+    }
+  }
+}
+
 export async function runChat(
   history: ChatMessage[],
 ): Promise<{ reply: string; uiCards: UiCard[] }> {
@@ -39,7 +64,7 @@ export async function runChat(
   const toolDeclarations = TOOLS.map((tool) => tool.declaration);
 
   for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
-    const response = await ai.models.generateContent({
+    const response = await generateContentWithRetry(ai, {
       model: MODEL,
       contents,
       config: {
