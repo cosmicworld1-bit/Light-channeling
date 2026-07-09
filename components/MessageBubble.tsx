@@ -1,4 +1,21 @@
-import type { ChatMessage } from "@/lib/types";
+import type { ChatMessage, UiCard } from "@/lib/types";
+import OrgSummaryCard from "./OrgSummaryCard";
+import OrgMatchesCard from "./OrgMatchesCard";
+
+function renderCard(card: UiCard, index: number) {
+  switch (card.type) {
+    case "org_summary":
+      return <OrgSummaryCard key={index} card={card} />;
+    case "org_matches":
+      return <OrgMatchesCard key={index} card={card} />;
+    default:
+      return (
+        <pre key={index} className="mt-2 rounded-lg bg-black/5 p-2 text-xs dark:bg-white/10">
+          {JSON.stringify(card, null, 2)}
+        </pre>
+      );
+  }
+}
 
 export default function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
@@ -13,13 +30,7 @@ export default function MessageBubble({ message }: { message: ChatMessage }) {
         }`}
       >
         {message.text}
-        {/* Dedicated card components (org summary, WhatsApp link) replace this
-            generic fallback once their tools are wired up in later phases. */}
-        {message.uiCards?.map((card, index) => (
-          <pre key={index} className="mt-2 rounded-lg bg-black/5 p-2 text-xs dark:bg-white/10">
-            {JSON.stringify(card, null, 2)}
-          </pre>
-        ))}
+        {message.uiCards?.map((card, index) => renderCard(card, index))}
       </div>
     </div>
   );

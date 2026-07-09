@@ -66,8 +66,8 @@ export default function ChatThread() {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {messages.length === 0 && (
           <p className="mt-10 text-center text-sm text-neutral-500">
             Ask about a school, or tell me about a session you just ran.
