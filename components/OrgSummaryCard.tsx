@@ -46,9 +46,9 @@ export default function OrgSummaryCard({ card }: { card: OrgSummaryCardData }) {
           <p>
             {session.date} · {session.time} · {session.headcount} people
           </p>
-          <p>
-            {session.sessionType.trim()} · presenter {session.presenter}
-          </p>
+          <p>{session.sessionType.trim()}</p>
+          <p>Volunteer: {session.volunteer}</p>
+          <p>Presenter: {session.presenter}</p>
           {session.remarks && (
             <p className="mt-1 text-neutral-500 dark:text-neutral-400">{session.remarks}</p>
           )}
