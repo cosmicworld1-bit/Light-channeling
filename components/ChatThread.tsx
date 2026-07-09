@@ -39,6 +39,8 @@ export default function ChatThread() {
     setSending(true);
     setError(null);
 
+    const fallbackError = "Couldn't reach the assistant — check your connection and try again.";
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -46,15 +48,19 @@ export default function ChatThread() {
         body: JSON.stringify({ messages: next.slice(-MAX_STORED_MESSAGES) }),
       });
 
-      if (!res.ok) throw new Error("Request failed");
+      const data = await res.json().catch(() => null);
 
-      const data = await res.json();
+      if (!res.ok) {
+        setError(typeof data?.error === "string" ? data.error : fallbackError);
+        return;
+      }
+
       setMessages((current) => [
         ...current,
         { role: "model", text: data.reply as string, uiCards: data.uiCards },
       ]);
     } catch {
-      setError("Couldn't reach the assistant — check your connection and try again.");
+      setError(fallbackError);
     } finally {
       setSending(false);
     }

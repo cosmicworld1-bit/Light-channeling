@@ -1,3 +1,4 @@
+import { ApiError } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
 import { runChat } from "@/lib/gemini";
 import type { ChatMessage } from "@/lib/types";
@@ -20,6 +21,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ reply, uiCards });
   } catch (error) {
     console.error("chat route error", error);
+
+    if (error instanceof ApiError && error.status === 429) {
+      return NextResponse.json(
+        { error: "The assistant is rate-limited by Gemini's free tier right now — wait about a minute and try again." },
+        { status: 429 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Something went wrong talking to the assistant." },
       { status: 500 },
