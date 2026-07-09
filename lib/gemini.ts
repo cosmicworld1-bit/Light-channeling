@@ -3,7 +3,12 @@ import type { Content, Part } from "@google/genai";
 import { TOOLS, dispatchTool } from "./tools";
 import type { ChatMessage, UiCard } from "./types";
 
-const MODEL = "gemini-2.5-flash";
+// gemini-2.5-flash's free tier is capped at just 20 requests/day per
+// project, which one CRM-lookup conversation can burn through alone.
+// flash-lite carries a separate quota bucket and is typically far less
+// restrictive on the free tier, at the cost of slightly less capable
+// tool-use reasoning.
+const MODEL = "gemini-2.5-flash-lite";
 const MAX_TOOL_ITERATIONS = 6;
 
 const SYSTEM_INSTRUCTION = `You are a personal assistant for Dammy, who runs "Light Channeling", a school-outreach volunteer program. You help by chat only (no voice yet).
